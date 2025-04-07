@@ -1,0 +1,40 @@
+---
+- name: Patch RHEL host
+  hosts: all
+  gather_facts: true
+  
+  vars:
+    yum_repo_dir: "/etc/yum.repos.d"
+    redhat_repo_file: "redhat.repo"
+  
+  tasks:
+    - name: List all repository files
+      ansible.builtin.find:
+        paths: "{{ yum_repo_dir }}"
+      register: repo_files
+
+    - name: Disable repos
+      ansible.builtin.lineinfile:
+        path: "{{ item.path }}"
+        regexp: '^enabled[= ]'
+        line: 'enabled = 0'
+      when: 'redhat_repo_file not in item.path '
+      with_items: "{{ repo_files.files }}"
+
+    - name: Clear the yum cache
+      ansible.builtin.shell:
+        cmd: /usr/bin/yum clean all
+      ignore_errors: yes
+      
+    - name: Patch server
+      ansible.builtin.yum:
+        name: '*'
+        state: latest
+        skip_broken: yes
+
+    - name: Reboot server
+      ansible.builtin.reboot:
+      
+    - name: Remove old kernels
+      command: /usr/bin/package-cleanup --oldkernels --count 1 -y
+      when: ansible_distribution == 'RedHat' and ansible_distribution_major_version|int == 7
