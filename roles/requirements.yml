@@ -1,0 +1,5 @@
+---
+roles:
+# Added for linux tasks
+ - src: git+https://github.com/rmassey411/ans_sysadmin_linux_role.git
+   scm: git
