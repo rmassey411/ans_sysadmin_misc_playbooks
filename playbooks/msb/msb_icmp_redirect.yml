@@ -1,0 +1,188 @@
+---
+- name: Disable ICMP redirect support
+  hosts: all
+  gather_facts: true
+
+  vars:
+    sysctl_net_ipv4_conf_all_accept_redirects_value: !!str 0
+    sysctl_net_ipv4_conf_all_secure_redirects_value: !!str 0
+    sysctl_net_ipv4_conf_default_accept_redirects_value: !!str 0
+    sysctl_net_ipv4_conf_default_secure_redirects_value: !!str 0
+
+  tasks:
+    - name: Gather the package facts
+      ansible.builtin.package_facts:
+        manager: auto
+      tags:
+      - reboot_required
+      - sysctl_net_ipv4_conf_all_accept_redirects
+
+    - name: List /etc/sysctl.d/*.conf files
+      ansible.builtin.find:
+        paths:
+        - /etc/sysctl.d/
+        - /run/sysctl.d/
+        - /usr/local/lib/sysctl.d/
+        contains: ^[\s]*net.ipv4.conf.all.accept_redirects.*$
+        patterns: '*.conf'
+        file_type: any
+      register: find_sysctl_d
+      when: '"kernel" in ansible_facts.packages'
+      tags:
+      - sysctl_net_ipv4_conf_all_accept_redirects
+
+    - name: Comment out any occurrences of net.ipv4.conf.all.accept_redirects from config files
+      ansible.builtin.replace:
+        path: '{{ item.path }}'
+        regexp: ^[\s]*net.ipv4.conf.all.accept_redirects
+        replace: '#net.ipv4.conf.all.accept_redirects'
+      loop: '{{ find_sysctl_d.files }}'
+      when: '"kernel" in ansible_facts.packages'
+      tags:
+      - reboot_required
+      - sysctl_net_ipv4_conf_all_accept_redirects
+
+    - name: Ensure sysctl net.ipv4.conf.all.accept_redirects is set
+      ansible.builtin.sysctl:
+        name: net.ipv4.conf.all.accept_redirects
+        value: '{{ sysctl_net_ipv4_conf_all_accept_redirects_value }}'
+        sysctl_file: /etc/sysctl.conf
+        state: present
+        reload: true
+      when: '"kernel" in ansible_facts.packages'
+      tags:
+      - reboot_required
+      - sysctl_net_ipv4_conf_all_accept_redirects
+
+    - name: Gather the package facts
+      ansible.builtin.package_facts:
+        manager: auto
+      tags:
+      - reboot_required
+      - sysctl_net_ipv4_conf_all_secure_redirects
+
+    - name: List /etc/sysctl.d/*.conf files
+      ansible.builtin.find:
+        paths:
+        - /etc/sysctl.d/
+        - /run/sysctl.d/
+        - /usr/local/lib/sysctl.d/
+        contains: ^[\s]*net.ipv4.conf.all.secure_redirects.*$
+        patterns: '*.conf'
+        file_type: any
+      register: find_sysctl_d
+      when: '"kernel" in ansible_facts.packages'
+      tags:
+      - sysctl_net_ipv4_conf_all_secure_redirects
+
+    - name: Comment out any occurrences of net.ipv4.conf.all.secure_redirects from config files
+      ansible.builtin.replace:
+        path: '{{ item.path }}'
+        regexp: ^[\s]*net.ipv4.conf.all.secure_redirects
+        replace: '#net.ipv4.conf.all.secure_redirects'
+      loop: '{{ find_sysctl_d.files }}'
+      when: '"kernel" in ansible_facts.packages'
+      tags:
+      - reboot_required
+      - sysctl_net_ipv4_conf_all_secure_redirects
+
+    - name: Ensure sysctl net.ipv4.conf.all.secure_redirects is set
+      ansible.builtin.sysctl:
+        name: net.ipv4.conf.all.secure_redirects
+        value: '{{ sysctl_net_ipv4_conf_all_secure_redirects_value }}'
+        sysctl_file: /etc/sysctl.conf
+        state: present
+        reload: true
+      when: '"kernel" in ansible_facts.packages'
+      tags:
+      - reboot_required
+      - sysctl_net_ipv4_conf_all_secure_redirects
+
+    - name: Gather the package facts
+      ansible.builtin.package_facts:
+        manager: auto
+      tags:
+      - reboot_required
+      - sysctl_net_ipv4_conf_default_accept_redirects
+
+    - name: List /etc/sysctl.d/*.conf files
+      ansible.builtin.find:
+        paths:
+        - /etc/sysctl.d/
+        - /run/sysctl.d/
+        - /usr/local/lib/sysctl.d/
+        contains: ^[\s]*net.ipv4.conf.default.accept_redirects.*$
+        patterns: '*.conf'
+        file_type: any
+      register: find_sysctl_d
+      when: '"kernel" in ansible_facts.packages'
+      tags:
+      - sysctl_net_ipv4_conf_default_accept_redirects
+
+    - name: Comment out any occurrences of net.ipv4.conf.default.accept_redirects from config files
+      ansible.builtin.replace:
+        path: '{{ item.path }}'
+        regexp: ^[\s]*net.ipv4.conf.default.accept_redirects
+        replace: '#net.ipv4.conf.default.accept_redirects'
+      loop: '{{ find_sysctl_d.files }}'
+      when: '"kernel" in ansible_facts.packages'
+      tags:
+      - reboot_required
+      - sysctl_net_ipv4_conf_default_accept_redirects
+
+    - name: Ensure sysctl net.ipv4.conf.default.accept_redirects is set
+      ansible.builtin.sysctl:
+        name: net.ipv4.conf.default.accept_redirects
+        value: '{{ sysctl_net_ipv4_conf_default_accept_redirects_value }}'
+        sysctl_file: /etc/sysctl.conf
+        state: present
+        reload: true
+      when: '"kernel" in ansible_facts.packages'
+      tags:
+      - reboot_required
+      - sysctl_net_ipv4_conf_default_accept_redirects
+
+    - name: Gather the package facts
+      ansible.builtin.package_facts:
+        manager: auto
+      tags:
+      - reboot_required
+      - sysctl_net_ipv4_conf_default_secure_redirects
+
+    - name: List /etc/sysctl.d/*.conf files
+      ansible.builtin.find:
+        paths:
+        - /etc/sysctl.d/
+        - /run/sysctl.d/
+        - /usr/local/lib/sysctl.d/
+        contains: ^[\s]*net.ipv4.conf.default.secure_redirects.*$
+        patterns: '*.conf'
+        file_type: any
+      register: find_sysctl_d
+      when: '"kernel" in ansible_facts.packages'
+      tags:
+      - sysctl_net_ipv4_conf_default_secure_redirects
+
+    - name: Comment out any occurrences of net.ipv4.conf.default.secure_redirects from config files
+      ansible.builtin.replace:
+        path: '{{ item.path }}'
+        regexp: ^[\s]*net.ipv4.conf.default.secure_redirects
+        replace: '#net.ipv4.conf.default.secure_redirects'
+      loop: '{{ find_sysctl_d.files }}'
+      when: '"kernel" in ansible_facts.packages'
+      tags:
+      - reboot_required
+      - sysctl_net_ipv4_conf_default_secure_redirects
+
+    - name: Ensure sysctl net.ipv4.conf.default.secure_redirects is set
+      ansible.builtin.sysctl:
+        name: net.ipv4.conf.default.secure_redirects
+        value: '{{ sysctl_net_ipv4_conf_default_secure_redirects_value }}'
+        sysctl_file: /etc/sysctl.conf
+        state: present
+        reload: true
+      when: '"kernel" in ansible_facts.packages'
+      tags:
+      - reboot_required
+      - sysctl_net_ipv4_conf_default_secure_redirects
+
