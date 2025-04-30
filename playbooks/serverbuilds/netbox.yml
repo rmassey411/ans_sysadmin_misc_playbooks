@@ -1,0 +1,60 @@
+---
+- name: Setup Netbox
+  hosts: all
+  gather_facts: yes
+
+  vars:
+    svc_acct:
+      username: "netbox"
+      comment: "Netbox user"
+      uid: 5015
+    filesystem:
+      - name: "u01"
+        size: 5g
+        path: "/u01"
+      - name: "var_lib_containers"
+        size: 5g
+        path: "/var/lib/containers"
+    directories:
+      - path: "/u01/containers/storage"
+        user: "netbox"
+        group: "netbox"
+        perms: "0750"
+    packages:
+      - podman
+
+
+  tasks:
+    - name: Create user
+      ansible.builtin.user:
+        name: "{{ svc_acct.username }}"
+        comment: "{{ svc_acct.comment }}"
+        uid: "{{ svc_acct.uid }}"
+        password_expire_max: 99999
+        create_home: yes
+        state: present
+
+    - name: Setup lvm
+      ansible.builtin.include_role:
+        name: ans_sysadmin_linux_role
+        tasks_from: "filesystem/lvm_app.yml"
+
+    - name: Setup directories
+      ansible.builtin.include_role:
+        name: ans_sysadmin_linux_role
+        tasks_from: "filesystem/directories.yml"
+
+    - name: Install packages
+      ansible.builtin.include_role:
+        name: ans_sysadmin_linux_role
+        tasks_from: "packages/pkgs_install.yml"
+
+    - name: Setup podman for nexus user
+      block:
+        - name: Create directory for configs
+          ansible.builtin.file:
+            path: "/home/nexus/.config/containers"
+            state: directory
+            owner: "nexus"
+            group: "nexus"
+            mode: 0750
