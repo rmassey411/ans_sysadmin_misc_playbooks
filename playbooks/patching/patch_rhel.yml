@@ -34,6 +34,10 @@
 
     - name: Reboot server
       ansible.builtin.reboot:
+        msg: "Rebooting after patching"
+        pre_reboot_delay: 0
+        post_reboot_delay: 60
+        test_command: uptime
       
     - name: Remove old kernels
       command: /usr/bin/package-cleanup --oldkernels --count 1 -y

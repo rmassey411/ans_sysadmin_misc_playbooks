@@ -1,0 +1,23 @@
+---
+- name: Patch Windows host
+  hosts: all
+  gather_facts: true
+  
+  tasks:
+    - name: Install all updates without rebooting
+      ansible.windows.win_updates:
+        category_names: '*'
+        reboot: no
+        server_selection: windows_update
+        # skip_optional: no
+        state: installed
+      register: system_patching
+
+    - name: Reboot server
+      ansible.windows.win_reboot:
+        msg: "Rebooting after patching"
+        pre_reboot_delay: 0
+        post_reboot_delay: 60
+        reboot_timeout: 600
+      when: system_patching.reboot_required | bool      
+      
